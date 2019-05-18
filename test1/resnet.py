@@ -190,7 +190,15 @@ class ResNet(nn.Module):
         x = self.fc(x)
 
         return x
-
+    
+def _resnet(arch, inplanes, planes, pretrained, progress, **kwargs):
+    model = ResNet(inplanes, planes, **kwargs)
+    if pretrained:
+        state_dict = load_state_dict_from_url(model_urls[arch],
+                                              progress=progress)
+        model.load_state_dict(state_dict)
+    return model
+	
 def myCNN(pretrained=False, progress=True, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
