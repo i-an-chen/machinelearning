@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from CNN import IMAGE_Dataset
 from dataset import IMAGE_Dataset
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
@@ -18,10 +17,12 @@ torch.backends.cudnn.benchmark = False
 #args = parse_args()
 #CUDA_DEVICES = args.cuda_devices
 #DATASET_ROOT = args.path
+
 CUDA_DEVICES = 0
 DATASET_ROOT = 'cars_train_crop'
 DATASET_TEST = 'cars_test_crop'
 DATASET_mat = 'cars_train_annos.mat'
+DATASET_test_mat = 'cars_test_annos_withlabels.mat'
 class CNN(nn.Module):
     def  __init__ (self,inputnumber,classnumber):
         super(CNN, self). __init__ ()
@@ -31,27 +32,25 @@ class CNN(nn.Module):
         self.conv4 = nn.Sequential(nn.Conv2d(64,128,5,1,2),nn.ReLU(),nn.MaxPool2d(2))          #64*28*28 => 128*14*14
         self.conv5 = nn.Sequential(nn.Conv2d(128,256,3,1,2),nn.ReLU(),nn.MaxPool2d(2))          #128*14*14 => 256*7*7
         self.out = nn .Linear(256*7*7,classnumber) 
-		self.fc = nn.Sequential(   #full connection layers.
-            nn.Linear(400,120),
-            nn.Linear(120,84),
-            nn.Linear(84,n_class)
-        )
     def forward(self, x):
         x =self.conv1(x)
         x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
         x = x.view(x.size(0), -1) # flat (batch_size, 32*7*7) 
-        output = self.out( x)
+        output = self.out(x)
         return output
 
 def train():
-	cnn = CNN()
+	cnn = CNN(3,196)
 	data_transform = transforms.Compose([
 		transforms.Resize((224,224)),
 		transforms.ToTensor(),
 		transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 	])
 	train_set = IMAGE_Dataset(Path(DATASET_ROOT),DATASET_mat, data_transform)
-	test_set = IMAGE_Dataset(Path(DATASET_TEST),DATASET_mat, data_transform)
+	test_set = IMAGE_Dataset(Path(DATASET_TEST),DATASET_test_mat, data_transform)
 	data_loader = DataLoader(dataset=train_set, batch_size=50, shuffle=True, num_workers=1)
 	test_loader = DataLoader(dataset=test_set, batch_size=50, shuffle=True, num_workers=1)
 	cnn = cnn.cuda()
@@ -101,25 +100,22 @@ def train():
 		class_correct = list(0. for i in enumerate(classes))
 		class_total = list(0. for i in enumerate(classes))
 		for inputs, labels in test_loader:
-            inputs = Variable(inputs.cuda(CUDA_DEVICES))
-            labels = Variable(labels.cuda(CUDA_DEVICES))
-            outputs = cnn(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            # totoal
-            total += labels.size(0)
-            total_correct += (predicted == labels).sum().item()
-            c = (predicted == labels).squeeze()
-            # batch size
-            for i in range(labels.size(0)):
-                label =labels[i]-1
-                class_correct[label] += c[i].item()
-                class_total[label] += 1
+            		inputs = Variable(inputs.cuda(CUDA_DEVICES))
+            		labels = Variable(labels.cuda(CUDA_DEVICES))
+            		outputs = cnn(inputs)
+            		_, predicted = torch.max(outputs.data, 1)
+            		# totoal
+            		total += labels.size(0)
+            		total_correct += (predicted == labels).sum().item()
+            		c = (predicted == labels).squeeze()
+            		# batch size
+            		for i in range(labels.size(0)):
+                		label =labels[i]-1
+                		class_correct[label] += c[i].item()
+                		class_total[label] += 1
 		print('Accuracy on the ALL test images: %d %%'
 			% (100 * total_correct / total))
 
-		for i, c in enumerate(classes):
-			print('Accuracy of %5s : %2d %%' % (
-			c, 100 * class_correct[i] / class_total[i]))
 
 		if training_acc > best_acc:
 			best_acc = training_acc
