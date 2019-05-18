@@ -20,6 +20,7 @@ torch.backends.cudnn.benchmark = False
 #DATASET_ROOT = args.path
 CUDA_DEVICES = 0
 DATASET_ROOT = 'cars_train_crop'
+DATASET_TEST = 'cars_test_crop'
 DATASET_mat = 'cars_train_annos.mat'
 class CNN(nn.Module):
     def  __init__ (self,inputnumber,classnumber):
@@ -30,6 +31,11 @@ class CNN(nn.Module):
         self.conv4 = nn.Sequential(nn.Conv2d(64,128,5,1,2),nn.ReLU(),nn.MaxPool2d(2))          #64*28*28 => 128*14*14
         self.conv5 = nn.Sequential(nn.Conv2d(128,256,3,1,2),nn.ReLU(),nn.MaxPool2d(2))          #128*14*14 => 256*7*7
         self.out = nn .Linear(256*7*7,classnumber) 
+		self.fc = nn.Sequential(   #full connection layers.
+            nn.Linear(400,120),
+            nn.Linear(120,84),
+            nn.Linear(84,n_class)
+        )
     def forward(self, x):
         x =self.conv1(x)
         x = self.conv2(x)
@@ -38,25 +44,23 @@ class CNN(nn.Module):
         return output
 
 def train():
-	resnet101 = CNN()
-	fc_features=resnet101.fc.in_features
-	resnet101.fc=nn.Linear(fc_features,197)
+	cnn = CNN()
 	data_transform = transforms.Compose([
 		transforms.Resize((224,224)),
 		transforms.ToTensor(),
 		transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 	])
-	#print(DATASET_ROOT)
 	train_set = IMAGE_Dataset(Path(DATASET_ROOT),DATASET_mat, data_transform)
+	test_set = IMAGE_Dataset(Path(DATASET_TEST),DATASET_mat, data_transform)
 	data_loader = DataLoader(dataset=train_set, batch_size=50, shuffle=True, num_workers=1)
-	resnet101 = resnet101.cuda(CUDA_DEVICES)
-	resnet101.train()
-
-	best_model_params = copy.deepcopy(resnet101.state_dict())
+	test_loader = DataLoader(dataset=test_set, batch_size=50, shuffle=True, num_workers=1)
+	cnn = cnn.cuda()
+	classes = [_dir.name for _dir in Path(DATASET_ROOT).glob('*')]
+	#best_model_params = copy.deepcopy(cnn.state_dict())
 	best_acc = 0.0
 	num_epochs = 50
 	criterion = nn.CrossEntropyLoss()
-	optimizer = torch.optim.SGD(params=resnet101.parameters(), lr=0.01, momentum=0.9)
+	optimizer = torch.optim.SGD(params=cnn.parameters(), lr=0.001, momentum=0.9)
 
 	for epoch in range(num_epochs):
 		print(f'Epoch: {epoch + 1}/{num_epochs}')
@@ -72,7 +76,7 @@ def train():
 
 			optimizer.zero_grad()
 
-			outputs = resnet101(inputs)
+			outputs = cnn(inputs)
 			_, preds = torch.max(outputs.data, 1)
 			loss = criterion(outputs, labels)
 
@@ -89,14 +93,40 @@ def train():
 		#print(training_acc.type())
 		#print(f'training_corrects: {training_corrects}\tlen(train_set):{len(train_set)}\n')
 		print(f'Training loss: {training_loss:.4f}\taccuracy: {training_acc:.4f}\n')
+		
+		cnn.eval()     #eval()时，模型会自动把BN和DropOut固定住，不会取平均，而是用训练好的值
+
+		total_correct = 0
+		total = 0
+		class_correct = list(0. for i in enumerate(classes))
+		class_total = list(0. for i in enumerate(classes))
+		for inputs, labels in test_loader:
+            inputs = Variable(inputs.cuda(CUDA_DEVICES))
+            labels = Variable(labels.cuda(CUDA_DEVICES))
+            outputs = cnn(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            # totoal
+            total += labels.size(0)
+            total_correct += (predicted == labels).sum().item()
+            c = (predicted == labels).squeeze()
+            # batch size
+            for i in range(labels.size(0)):
+                label =labels[i]-1
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+		print('Accuracy on the ALL test images: %d %%'
+			% (100 * total_correct / total))
+
+		for i, c in enumerate(classes):
+			print('Accuracy of %5s : %2d %%' % (
+			c, 100 * class_correct[i] / class_total[i]))
 
 		if training_acc > best_acc:
 			best_acc = training_acc
-			best_model_params = copy.deepcopy(resnet101.state_dict())
+			best_model_params = copy.deepcopy(cnn.state_dict())
 		if (epoch+1)%10 == 0 :
-			print(f'Epoch: {epoch + 1}/{num_epochs}')
-			resnet101.load_state_dict(best_model_params)
-			torch.save(resnet101, f'train_acc.pth')
+			cnn.load_state_dict(best_model_params)
+			torch.save(cnn, f'train_acc.pth')
 
 
 if __name__ == '__main__':
