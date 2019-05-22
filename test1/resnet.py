@@ -1,5 +1,5 @@
 import torch.nn as nn
-from .utils import load_state_dict_from_url
+import torch.utils.model_zoo as model_zoo
 
 model_urls = {
     'myCNN': '/train_acc.pth'
@@ -194,9 +194,7 @@ class ResNet(nn.Module):
 def _resnet(arch, inplanes, planes, pretrained, progress, **kwargs):
     model = ResNet(inplanes, planes, **kwargs)
     if pretrained:
-        state_dict = load_state_dict_from_url(model_urls[arch],
-                                              progress=progress)
-        model.load_state_dict(state_dict)
+        model.load_state_dict(model_zoo.load_url(model_urls['myCNN']))
     return model
 	
 def myCNN(pretrained=False, progress=True, **kwargs):
