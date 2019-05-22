@@ -40,7 +40,7 @@ def train():
 		transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 	])
 	train_set = IMAGE_Dataset(Path(DATASET_ROOT),DATASET_mat, data_transform)
-	data_loader = DataLoader(dataset=train_set, batch_size=50, shuffle=True, num_workers=1)
+	data_loader = DataLoader(dataset=train_set, batch_size=55, shuffle=True, num_workers=1)
 	cnn = cnn.cuda(CUDA_DEVICES)
 	cnn.train()
 	
