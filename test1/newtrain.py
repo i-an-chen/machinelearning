@@ -47,9 +47,9 @@ def train():
 	classes = [_dir.name for _dir in Path(DATASET_ROOT).glob('*')]
 	#best_model_params = copy.deepcopy(cnn.state_dict())
 	best_acc = 0.0
-	num_epochs = 50
+	num_epochs = 55
 	criterion = nn.CrossEntropyLoss()
-	optimizer = torch.optim.SGD(params=cnn.parameters(), lr=0.001, momentum=0.9)
+	optimizer = torch.optim.SGD(params=cnn.parameters(), lr=0.01, momentum=0.9)
 
 	for epoch in range(num_epochs):
 		print(f'Epoch: {epoch + 1}/{num_epochs}')
