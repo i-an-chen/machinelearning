@@ -114,7 +114,7 @@ class ResNet(nn.Module):
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
-            replace_stride_with_dilation = [False, False, False, False]
+            replace_stride_with_dilation = [False, False, False]
         if len(replace_stride_with_dilation) != 4:
             raise ValueError("replace_stride_with_dilation should be None "
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
@@ -130,8 +130,6 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
-        self.layer5 = self._make_layer(block, 1024, layers[4], stride=2,
-                                       dilate=replace_stride_with_dilation[3])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(1024 * block.expansion, num_classes)
 
@@ -186,7 +184,6 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.layer5(x)
 
         x = self.avgpool(x)
         x = x.reshape(x.size(0), -1)
@@ -206,5 +203,5 @@ def myCNN(pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('myCNN', Bottleneck, [3, 8, 19, 5,1], pretrained, progress,
+    return _resnet('myCNN', Bottleneck, [3, 8, 19, 5], pretrained, progress,
                    **kwargs)
