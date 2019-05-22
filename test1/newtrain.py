@@ -26,7 +26,7 @@ DATASET_mat = 'cars_train_annos.mat'
 
 def train():
 	resnet50 = models.resnet50(pretrained=True)
-	cnn = CNN(pretrained=True)	
+	cnn = myCNN(pretrained=True)	
 	
 	pretrained_dict = resnet50.state_dict()
 	model_dict = cnn.state_dict()
