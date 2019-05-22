@@ -19,7 +19,7 @@ torch.backends.cudnn.benchmark = False
 #CUDA_DEVICES = args.cuda_devices
 #DATASET_ROOT = args.path
 
-CUDA_DEVICES = 0
+CUDA_DEVICES = 1
 DATASET_ROOT = 'cars_train_crop'
 DATASET_mat = 'cars_train_annos.mat'
 
@@ -47,7 +47,7 @@ def train():
 	classes = [_dir.name for _dir in Path(DATASET_ROOT).glob('*')]
 	#best_model_params = copy.deepcopy(cnn.state_dict())
 	best_acc = 0.0
-	num_epochs = 55
+	num_epochs = 50
 	criterion = nn.CrossEntropyLoss()
 	optimizer = torch.optim.SGD(params=cnn.parameters(), lr=0.01, momentum=0.9)
 
