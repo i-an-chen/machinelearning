@@ -203,5 +203,5 @@ def myCNN(pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _resnet('myCNN', Bottleneck, [3, 8, 19, 3], pretrained, progress,
+    return _resnet('myCNN', Bottleneck, [2, 4, 27, 2], pretrained, progress,
                    **kwargs)
