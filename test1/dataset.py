@@ -13,7 +13,7 @@ class IMAGE_Dataset(Dataset):
         self.data = sio.loadmat(matfn)['annotations']
         self.transform = transform
         for i in range(len(self.data[0])):
-                self.x.append(../../str(self.root_dir)+"/"+str(self.data[0][i][4][0][0])+"/"+str(self.data[0][i][5][0]))
+                self.x.append('../../'+str(self.root_dir)+"/"+str(self.data[0][i][4][0][0])+"/"+str(self.data[0][i][5][0]))
                 self.y.append(int(self.data[0][i][4][0][0]))
     def __len__(self):
         return len(self.x)
