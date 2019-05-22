@@ -21,22 +21,26 @@ torch.backends.cudnn.benchmark = False
 
 CUDA_DEVICES = 0
 DATASET_ROOT = 'cars_train_crop'
-DATASET_TEST = 'cars_test_crop'
 DATASET_mat = 'cars_train_annos.mat'
-DATASET_test_mat = 'cars_test_annos_withlabels.mat'
 
 
 def train():
-	cnn = CNN(pretrained=False,)
+	resnet50 = models.resnet50(pretrained=True)
+	cnn = CNN(pretrained=True)	
+	
+	pretrained_dict = resnet50.state_dict()
+	model_dict = cnn.state_dict()
+	pretrained_dict =  {k: v for k, v in pretrained_dict.items() if k in model_dict}
+	model_dict.update(pretrained_dict)
+	cnn.load_state_dict(model_dict)
+	
 	data_transform = transforms.Compose([
 		transforms.Resize((224,224)),
 		transforms.ToTensor(),
 		transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 	])
 	train_set = IMAGE_Dataset(Path(DATASET_ROOT),DATASET_mat, data_transform)
-	test_set = IMAGE_Dataset(Path(DATASET_TEST),DATASET_test_mat, data_transform)
 	data_loader = DataLoader(dataset=train_set, batch_size=50, shuffle=True, num_workers=1)
-	test_loader = DataLoader(dataset=test_set, batch_size=50, shuffle=True, num_workers=1)
 	cnn = cnn.cuda(CUDA_DEVICES)
 	cnn.train()
 	
@@ -78,29 +82,6 @@ def train():
 		#print(training_acc.type())
 		#print(f'training_corrects: {training_corrects}\tlen(train_set):{len(train_set)}\n')
 		print(f'Training loss: {training_loss:.4f}\taccuracy: {training_acc:.4f}\n')
-		
-		cnn.eval()     #eval()时，模型会自动把BN和DropOut固定住，不会取平均，而是用训练好的值
-
-		total_correct = 0
-		total = 0
-		class_correct = list(0. for i in enumerate(classes))
-		class_total = list(0. for i in enumerate(classes))
-		for inputs, labels in test_loader:
-            		inputs = Variable(inputs.cuda(CUDA_DEVICES))
-            		labels = Variable(labels.cuda(CUDA_DEVICES))
-            		outputs = cnn(inputs)
-            		_, predicted = torch.max(outputs.data, 1)
-            		# totoal
-            		total += labels.size(0)
-            		total_correct += (predicted == labels).sum().item()
-            		c = (predicted == labels).squeeze()
-            		# batch size
-            		for i in range(labels.size(0)):
-                		label =labels[i]-1
-                		class_correct[label] += c[i].item()
-                		class_total[label] += 1
-		print('Accuracy on the ALL test images: %d %%'
-			% (100 * total_correct / total))
 
 
 		if training_acc > best_acc:
