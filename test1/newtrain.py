@@ -25,14 +25,14 @@ DATASET_mat = 'cars_train_annos.mat'
 
 
 def train():
-	resnet50 = models.resnet50(pretrained=True)
+	#resnet50 = models.resnet50(pretrained=True)
 	cnn = myCNN()	
 	
-	pretrained_dict = resnet50.state_dict()
-	model_dict = cnn.state_dict()
-	pretrained_dict =  {k: v for k, v in pretrained_dict.items() if k in model_dict}
-	model_dict.update(pretrained_dict)
-	cnn.load_state_dict(model_dict)
+	#pretrained_dict = resnet50.state_dict()
+	#model_dict = cnn.state_dict()
+	#pretrained_dict =  {k: v for k, v in pretrained_dict.items() if k in model_dict}
+	#model_dict.update(pretrained_dict)
+	#cnn.load_state_dict(model_dict)
 	
 	data_transform = transforms.Compose([
 		transforms.Resize((224,224)),
