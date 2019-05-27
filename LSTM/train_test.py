@@ -16,7 +16,7 @@ df = pd.read_csv("./STT.csv", index_col = 0)
 df2 = pd.read_csv("./securities.csv", index_col = 0)
 
 STT = df[df.symbol == 'STT'].copy()
-df2conv = df[df.GICSSector == 'Financials'].copy()
+df2conv = df2[df2.GICSSector == 'Financials'].copy()
 print(df2conv)
 STT.drop(['symbol'],1,inplace=True)
 STT_new = normalize_data(STT)
