@@ -12,10 +12,12 @@ import numpy as np
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 DATASET_ROOT = './'
 
-df = pd.read_csv("./STTcsv", index_col = 0)
+df = pd.read_csv("./STT.csv", index_col = 0)
+df2 = pd.read_csv("./securities.csv", index_col = 0)
 
 STT = df[df.symbol == 'STT'].copy()
-#print(GOOG)
+df2conv = df[df.GICSSector == 'Financials'].copy()
+print(df2conv)
 STT.drop(['symbol'],1,inplace=True)
 STT_new = normalize_data(STT)
 #print(GOOG_new)
