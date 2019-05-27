@@ -17,7 +17,7 @@ df2 = pd.read_csv("./securities.csv", index_col = 0)
 
 STT = df[df.symbol == 'STT'].copy()
 df2conv = df2[df2.GICSSector == 'Financials'].copy()
-print(df2conv)
+print(df2conv.Tickersymbol[1])
 
 STT.drop(['symbol'],1,inplace=True)
 STT_new = normalize_data(STT)
