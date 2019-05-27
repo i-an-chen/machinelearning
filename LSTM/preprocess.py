@@ -1,6 +1,7 @@
 from sklearn import preprocessing
 import pandas as pd
 import numpy as np
+import numpy
 def normalize_data(df):
     min_max_scaler = preprocessing.MinMaxScaler()
     df['open'] = min_max_scaler.fit_transform(df.open.values.reshape(-1,1))
@@ -45,7 +46,7 @@ def data_split(stock, seq_len,stock2):
 
     x_train2 = np.reshape(x_train2, (x_train2.shape[0], x_train2.shape[1], amount_of_features))
     
-    x_train=x_train.append(x_train2)
-    y_train=y_train.append(y_train2)
+    x_train=numpy.concatenate([x_train,x_train2])
+    y_train=numpy.concatenate([y_train,y_train2])
     
     return [x_train, y_train, x_test, y_test]
