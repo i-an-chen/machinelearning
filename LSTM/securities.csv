@@ -1,4 +1,4 @@
-"Ticker symbol","Security","SEC filings","GICS Sector","GICS Sub Industry","Address of Headquarters","Date first added","CIK"
+"Tickersymbol","Security","SECfilings","GICSSector","GICSSubIndustry","AddressofHeadquarters","Datefirstadded","CIK"
 "MMM","3M Company","reports","Industrials","Industrial Conglomerates","St. Paul, Minnesota","","0000066740"
 "ABT","Abbott Laboratories","reports","Health Care","Health Care Equipment","North Chicago, Illinois","1964-03-31","0000001800"
 "ABBV","AbbVie","reports","Health Care","Pharmaceuticals","North Chicago, Illinois","2012-12-31","0001551152"
