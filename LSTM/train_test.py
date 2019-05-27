@@ -13,18 +13,24 @@ device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 DATASET_ROOT = './'
 
 df = pd.read_csv("./STT.csv", index_col = 0)
-df2 = pd.read_csv("./securities.csv", index_col = 0)
-
 STT = df[df.symbol == 'STT'].copy()
+
+df2 = pd.read_csv("./securities.csv", index_col = 0)
 df2conv = df2[df2.GICSSector == 'Financials'].copy()
 df2_new=df2conv.as_matrix()
-print(df2conv[0][1])
+#df2_new[0][0:1][0]
+
+df3 = pd.read_csv("./prices-split-adjusted.csv", index_col = 0)
+PSA = df[df3.symbol == df2_new[0][0:1][0]].copy()
+
 
 STT.drop(['symbol'],1,inplace=True)
 STT_new = normalize_data(STT)
+PSA.drop(['symbol'],1,inplace=True)
+PSA_new = normalize_data(PSA)
 #print(GOOG_new)
 window = 15
-X_train, y_train, X_test, y_test = data_split(STT_new, window)
+X_train, y_train, X_test, y_test = data_split(STT_new, window,PSA_new)
 
 INPUT_SIZE = 5
 HIDDEN_SIZE = 64
