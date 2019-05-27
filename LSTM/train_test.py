@@ -15,14 +15,20 @@ DATASET_ROOT = './'
 df = pd.read_csv("./STT.csv", index_col = 0)
 STT = df[df.symbol == 'STT'].copy()
 
-df2 = pd.read_csv("./securities.csv", index_col = 0)
+df2 = pd.read_csv("./securities.csv")
 df2conv = df2[df2.GICSSector == 'Financials'].copy()
 df2_new=df2conv.as_matrix()
-#df2_new[0][0:1][0]
+print('=======================')
+#print()
+
 
 df3 = pd.read_csv("./prices-split-adjusted.csv", index_col = 0)
-PSA = df[df3.symbol == df2_new[0][0:1][0]].copy()
+print(df3)
+PSA = df3[df3.symbol == df2_new[0][0:1][0]].copy()
+print(PSA)
 
+print('=========')
+print(STT)
 
 STT.drop(['symbol'],1,inplace=True)
 STT_new = normalize_data(STT)
@@ -31,6 +37,7 @@ PSA_new = normalize_data(PSA)
 #print(GOOG_new)
 window = 15
 X_train, y_train, X_test, y_test = data_split(STT_new, window,PSA_new)
+
 
 INPUT_SIZE = 5
 HIDDEN_SIZE = 64
@@ -74,5 +81,6 @@ result =np.array(result)
 plt.plot(result,color='red', label='Prediction')
 plt.plot(y_test,color='blue', label='Actual')
 plt.legend(loc='best')
+plt.savefig("filename.png")
 plt.show()
 #print (X_train.shape, y_train.shape,X_test.shape,y_test.shape)
